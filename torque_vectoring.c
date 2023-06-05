@@ -1,9 +1,10 @@
 /*
- * torque_vectoring.c
+ * torque_vecotring.c
  *
- *  Created on: 8 kwi 2023
- *      Author: Olson & Grubson
+ *  Created on: 05 cze 2023
+ *      Author: Jakub
  */
+
 
 /*****************************************************************
 							INCLUDES
@@ -11,21 +12,18 @@
 
 #include "amk_pte.h"
 #include "torque_vectoring.h"
-#include "amk_typedefs.h"
 /*****************************************************************
 						DEFINES / MACROS
 *****************************************************************/
-
-struct torqueVectoring_t
+typedef struct
 {
-	pidController_t* pid;
-	torqueVectoringInput_t* input;
-};
-
+	torqueVectoring_t TorqueVetoringBuffer[MAX_TORQUE_VECTORING_INSTANCES];
+	int tvBufferIndex;
+}memoryBuffer_t;
 /*****************************************************************
 						GLOBAL VARIABLES
 *****************************************************************/
-
+static memoryBuffer_t memBuffer;
 /*****************************************************************
 					PRIVATE FUNCTION DEFINITIONS
 *****************************************************************/
@@ -65,11 +63,11 @@ static void RadiusFlagCalculate(torqueVectoring_t* const tv)
 	 tv->turnRadiusFlag=result;
 }
 
-static sComputeType_t YawRefCalculation(torqueVectoring_t* const tv, sComputeType_t vx)
+static void YawRefCalculation(torqueVectoring_t* const tv, sComputeType_t vx)
 {
 	sComputeType_t result;
 	result=vx/(tv->turnRadius);
-	return tv->yawRateSetpoint;
+	tv->yawRateSetpoint=result;
 }
 
 
@@ -108,20 +106,20 @@ static void TorqueDistrubution(torqueVectoring_t* const tv,torqueVectoringOutput
 *****************************************************************/
 static void TV_Calculate(torqueVectoring_t* const tv, const torqueVectoringInput_t* input, torqueVectoringOutput_t* const output)
 {
-	SteerAngleToRadius(&tv,input->steerAngleSignal, input->carXVelocity);
-	YawRefCalculation(&tv,input->carXVelocity);
-	TorqueDistrubution(&tv, &input,&output,input->torqueFromPedal,input->lambdaRatio );
+	SteerAngleToRadius(tv,input->steerAngleSignal, input->carXVelocity);
+	YawRefCalculation(tv,input->carXVelocity);
+	TorqueDistrubution(tv,output,input,input->torqueFromPedal,input->lambdaRatio);
 }
 torqueVectoring_t* TV_Init()
 {
-	if(memBuffer.tcBufferIndex >= MAX_TRACTION_CONTROL_INSTANCES)
+	if(memBuffer.tvBufferIndex >= MAX_TORQUE_VECTORING_INSTANCES)
 	{
 		return NULL;
 	}
-	tractionControl_t* result = &memBuffer.tractionControlBuffer[memBuffer.tcBufferIndex];
-	memBuffer.tcBufferIndex++;
+	torqueVectoring_t* result = &memBuffer.TorqueVetoringBuffer[memBuffer.tvBufferIndex];
+	memBuffer.tvBufferIndex++;
 
-	result->pid = Pid_Init(1,1,1,10);
+	result->pidController = Pid_Init(1,1,1,10);
 
 	return result;
 }

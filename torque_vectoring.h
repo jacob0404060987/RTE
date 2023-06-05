@@ -1,12 +1,11 @@
 /*
- * torque_vectoring.h
+ * torque_vectoring.c
  *
- *  Created on: 8 kwi 2023
- *      Author: Olson & Grubson
+ *  Created on: 05 cze 2023
+ *      Author: Jakub
  */
 
-#ifndef INC_TORQUE_VECTORING_H_
-#define INC_TORQUE_VECTORING_H_
+
 
 /*****************************************************************
 							INCLUDES
@@ -16,6 +15,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include "pid.h"
+#include "amk_typedefs.h"
 /*****************************************************************
 					PUBLIC DEFINES / MACROS
 *****************************************************************/
@@ -48,8 +48,7 @@ typedef struct
 }torqueVectoringOutput_t;
 
 /*****************************************************************
-					PUBLIC FUNCTION DECLARATIONS
-*****************************************************************/
-//torqueVectoringOutput_t* TV_Calculate(torqueVectoring_t* const tv, const torqueVectoringInput_t* input);
+					PUBLIC FUNCTION DECLARATIONS*/
+void TV_Calculate(torqueVectoring_t* const tv, const torqueVectoringInput_t* input, torqueVectoringOutput_t* const output);
 torqueVectoring_t* TV_Init();
-#endif /* INC_TORQUE_VECTORING_H_ */
+
